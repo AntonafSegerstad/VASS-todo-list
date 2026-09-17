@@ -4,9 +4,9 @@
 `https://vass-todo-list.onrender.com/`.
 **Målgrupp:** Utvecklare och testare som bygger, ändrar eller testar appen.
 **Bakgrund/varför:** Se [`00-affarside-och-vision.md`](00-affarside-och-vision.md).
-**Relaterat:** Testhygien och det formella testkontraktet mot detta system finns redan i
-[`../QA_SPEC.md`](../QA_SPEC.md) och ska inte dupliceras här — detta dokument beskriver
-*produktkraven*, QA_SPEC beskriver *testregler mot den delade, verkliga instansen*.
+**Relaterat:** Detta dokument beskriver *produktkraven*. Testhygien vid API-tester (regler för
+testdata mot den delade, verkliga instansen) finns i
+[`02-api-specifikation.md`](02-api-specifikation.md#testhygien-vid-api-tester).
 
 ## 1. Omfattning
 
@@ -162,4 +162,5 @@ En ändring anses klar när:
    *först*, med en medveten motivering.
 3. GUI och API är verifierat konsekventa (en ändring gjord via ena vägen syns via den andra).
 4. Testning har skett mot den delade produktionsinstansen enligt testhygienreglerna i
-   [`../QA_SPEC.md`](../QA_SPEC.md) — dvs. utan att skriva över eller radera andras data.
+   [`02-api-specifikation.md`](02-api-specifikation.md#testhygien-vid-api-tester) — dvs. utan att
+   skriva över eller radera andras data.

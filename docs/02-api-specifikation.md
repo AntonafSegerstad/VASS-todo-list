@@ -7,9 +7,8 @@ av utvecklare/testare innan man skriver tester som låser exakt fältnamn eller 
 **Base URL:** `https://vass-todo-list.onrender.com/`
 
 **Not om autentisering:** Det finns internt en API-nyckel kopplad till denna tjänst, men den
-förvaltas separat och ska **inte** skrivas in i den här filen eller i något annat
-toolkit-genererat dokument (se targets-mappens allmänna regel om att hålla nycklar utanför
-committade/delade filer). Observerat beteende (2026-09-15, manuellt test): `GET /todos` och
+förvaltas separat och ska **inte** skrivas in i den här filen, i kod eller i någon annan committad
+fil i detta repo. Observerat beteende (2026-09-15, manuellt test): `GET /todos` och
 `DELETE /todos/:id` fungerade utan `Authorization`-header alls. `POST` har bara testats via
 GUI-formuläret, inte som ett direkt autentiserat API-anrop — så POST:s eget autentiseringsbeteende
 är **obekräftat**. Enligt produktkravet (NFR-1 i kravspecifikationen) ska ingen endpoint kräva
@@ -89,6 +88,11 @@ Tar bort en todo permanent.
 
 ## Testhygien vid API-tester
 
-Detta API pekar mot en delad, verklig lista i produktion. All testdata som skapas via detta API
-ska följa `qa-`-prefixregeln och tas bort efter testet — se
-[`../QA_SPEC.md`](../QA_SPEC.md) för det fullständiga, bindande testkontraktet.
+Detta API pekar mot en delad, verklig lista i produktion (`https://vass-todo-list.onrender.com/`)
+— det finns ingen separat test- eller staging-miljö. Vid tester mot detta API:
+
+- Prefixa all testdata du skapar med `qa-` (t.ex. `qa-testrad-1234`) så den går att skilja från
+  riktiga användares todos.
+- Ta bort din egen testdata (`DELETE /todos/:id`) när testet är klart.
+- Skriv aldrig över eller radera todos du inte själv skapat — andra testare och den faktiska
+  användaren delar samma lista.
