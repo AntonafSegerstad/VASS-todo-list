@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<title>VASS Toto-List</title>
+<title>VASS Todo-List</title>
 <style>
   body {
     font-family: 'Segoe UI', sans-serif;
@@ -97,11 +97,17 @@
     padding: 3px 8px;
     cursor: pointer;
   }
+  .version {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+  }
 </style>
 </head>
 <body>
   <div class="note">
-    <h1>VASS Toto-List</h1>
+    <h1>VASS Todo-List</h1>
     <form id="addForm">
       <input type="text" id="newName" placeholder="Namn (valfritt)" maxlength="20" autocomplete="off" />
       <input type="text" id="newTodo" placeholder="Ny todo..." autocomplete="off" />
@@ -109,6 +115,7 @@
     </form>
     <ul id="list"></ul>
   </div>
+  <div class="version" id="version"></div>
 
 <script>
 const list = document.getElementById('list');
@@ -215,7 +222,18 @@ async function deleteTodo(id) {
   loadTodos();
 }
 
+async function loadVersion() {
+  try {
+    const res = await fetch('/version');
+    const data = await res.json();
+    document.getElementById('version').textContent = `v${data.version} · ${data.commit}`;
+  } catch {
+    document.getElementById('version').textContent = '';
+  }
+}
+
 loadTodos();
+loadVersion();
 </script>
 </body>
 </html>
