@@ -1,6 +1,7 @@
 const express = require('express');
 const Database = require('better-sqlite3');
 const path = require('path');
+const packageJson = require('./package.json');
 
 const app = express();
 const db = new Database(path.join(__dirname, 'toto.db'));
@@ -21,6 +22,14 @@ if (!existingColumns.some((c) => c.name === 'name')) {
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Version/build-id för lappen, så det syns vilken deploy som är live
+app.get('/version', (req, res) => {
+  res.json({
+    version: packageJson.version,
+    commit: (process.env.RENDER_GIT_COMMIT || 'dev').slice(0, 7)
+  });
+});
 
 // Hämta alla todos
 app.get('/todos', (req, res) => {
@@ -65,4 +74,4 @@ app.delete('/todos/:id', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`VASS Toto-List körs på http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`VASS Todo-List körs på http://localhost:${PORT}`));
