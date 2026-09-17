@@ -29,15 +29,21 @@
   }
   form {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
     margin-bottom: 14px;
   }
   input[type="text"] {
-    flex: 1;
     padding: 6px;
     border: 1px solid #c9c26b;
     border-radius: 4px;
     background: #fffde7;
+  }
+  input#newName {
+    flex: 0 0 100px;
+  }
+  input#newTodo {
+    flex: 1 1 150px;
   }
   button.add-btn {
     background: #558b2f;
@@ -64,8 +70,19 @@
     height: 18px;
     accent-color: #2e7d32;
   }
-  li span.text {
+  li .entry {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  li span.name {
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #8d6e00;
+    outline: none;
+  }
+  li span.text {
     outline: none;
   }
   li.done span.text {
@@ -86,6 +103,7 @@
   <div class="note">
     <h1>VASS Toto-List</h1>
     <form id="addForm">
+      <input type="text" id="newName" placeholder="Namn (valfritt)" maxlength="20" autocomplete="off" />
       <input type="text" id="newTodo" placeholder="Ny todo..." autocomplete="off" />
       <button type="submit" class="add-btn">Lägg till</button>
     </form>
@@ -96,6 +114,7 @@
 const list = document.getElementById('list');
 const addForm = document.getElementById('addForm');
 const newTodo = document.getElementById('newTodo');
+const newName = document.getElementById('newName');
 
 async function loadTodos() {
   const res = await fetch('/todos');
@@ -113,6 +132,18 @@ function renderTodo(todo) {
   checkbox.checked = !!todo.done;
   checkbox.addEventListener('change', () => toggleDone(todo.id, checkbox.checked));
 
+  const entry = document.createElement('div');
+  entry.className = 'entry';
+
+  const nameSpan = document.createElement('span');
+  nameSpan.className = 'name';
+  nameSpan.contentEditable = true;
+  nameSpan.textContent = todo.name && todo.name.trim() ? todo.name : 'Okänd';
+  nameSpan.addEventListener('blur', () => editName(todo.id, nameSpan.textContent));
+  nameSpan.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); nameSpan.blur(); }
+  });
+
   const span = document.createElement('span');
   span.className = 'text';
   span.contentEditable = true;
@@ -122,13 +153,16 @@ function renderTodo(todo) {
     if (e.key === 'Enter') { e.preventDefault(); span.blur(); }
   });
 
+  entry.appendChild(nameSpan);
+  entry.appendChild(span);
+
   const delBtn = document.createElement('button');
   delBtn.className = 'delete-btn';
   delBtn.textContent = 'Ta bort';
   delBtn.addEventListener('click', () => deleteTodo(todo.id));
 
   li.appendChild(checkbox);
-  li.appendChild(span);
+  li.appendChild(entry);
   li.appendChild(delBtn);
   list.appendChild(li);
 }
@@ -137,12 +171,14 @@ addForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const text = newTodo.value.trim();
   if (!text) return;
+  const name = newName.value;
   await fetch('/todos', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ text, name })
   });
   newTodo.value = '';
+  newName.value = '';
   loadTodos();
 });
 
@@ -163,6 +199,15 @@ async function editText(id, text) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text })
   });
+}
+
+async function editName(id, name) {
+  await fetch(`/todos/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  });
+  loadTodos();
 }
 
 async function deleteTodo(id) {

@@ -9,9 +9,15 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS todos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     text TEXT NOT NULL,
-    done INTEGER NOT NULL DEFAULT 0
+    done INTEGER NOT NULL DEFAULT 0,
+    name TEXT DEFAULT ''
   )
 `);
+
+const existingColumns = db.prepare("PRAGMA table_info(todos)").all();
+if (!existingColumns.some((c) => c.name === 'name')) {
+  db.exec(`ALTER TABLE todos ADD COLUMN name TEXT DEFAULT ''`);
+}
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -26,7 +32,9 @@ app.get('/todos', (req, res) => {
 app.post('/todos', (req, res) => {
   const text = (req.body.text || '').trim();
   if (!text) return res.status(400).json({ error: 'text saknas' });
-  const info = db.prepare('INSERT INTO todos (text, done) VALUES (?, 0)').run(text);
+  // Namn skickas vidare rakt av: ingen trimning, ingen längdgräns (GUI:t begränsar till 20 tecken)
+  const name = req.body.name || '';
+  const info = db.prepare('INSERT INTO todos (text, done, name) VALUES (?, 0, ?)').run(text, name);
   const todo = db.prepare('SELECT * FROM todos WHERE id = ?').get(info.lastInsertRowid);
   res.json(todo);
 });
@@ -39,8 +47,11 @@ app.put('/todos/:id', (req, res) => {
 
   const text = req.body.text !== undefined ? req.body.text : existing.text;
   const done = req.body.done !== undefined ? (req.body.done ? 1 : 0) : existing.done;
+  // Annan gräns än vid skapande (15 tecken här mot ingen vid POST) och tyst trunkering utan felmeddelande
+  let name = req.body.name !== undefined ? req.body.name : existing.name;
+  if (name.length > 15) name = name.slice(0, 15);
 
-  db.prepare('UPDATE todos SET text = ?, done = ? WHERE id = ?').run(text, done, id);
+  db.prepare('UPDATE todos SET text = ?, done = ?, name = ? WHERE id = ?').run(text, done, name, id);
   const updated = db.prepare('SELECT * FROM todos WHERE id = ?').get(id);
   res.json(updated);
 });
